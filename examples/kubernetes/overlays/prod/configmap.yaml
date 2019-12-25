@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kwite-config
+data:
+  template: |
+    this is a
+    production template
+    x is {{ .x }}

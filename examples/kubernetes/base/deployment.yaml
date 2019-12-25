@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kwite
+  labels:
+    app: kwite
+spec:
+  selector:
+    matchLabels:
+      app: kwite
+  template:
+    metadata:
+      labels:
+        app: kwite
+    spec:
+      containers:
+        - name: kwite
+          image: kwite:latest
+          env:
+          - name: CONFIGDIR
+            value: "/configs"
+          ports:
+            - containerPort: 8080
+              name: kwite
+              protocol: TCP
+          command:
+            - "/kwite"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /configs
+          securityContext:
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: kwite-config

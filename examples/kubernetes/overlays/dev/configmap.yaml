@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kwite-config
+data:
+  url: /kwite
+  template: |
+    this is a
+    dev template and definitely, for sure
+    x is {{ .x }}
+  ready: "OK!"
+  alive: "OK!"
