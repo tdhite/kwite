@@ -32,6 +32,7 @@ spec:
             runAsNonRoot: true
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
+            runAsUser: 65534
           resources:
             requests:
               memory: "64Mi"
