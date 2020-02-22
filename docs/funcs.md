@@ -7,7 +7,7 @@ However, Kwites add functionality from the core Go packages for use as well as
 various additional functions the [Kwite](https://github.com/tdhite/kwite)
 itself exposes.
 
-## Kwite HTTP Functions
+## HTTP Functions
 Kwite exposes [REST](https://restfulapi.net) helper functions. These are as
 follows:
 
@@ -102,3 +102,68 @@ For example, this template will work to print the value of sin(pi):
     The value of the sin(pi) is {{ Sin Pi }}.
 
 For more examples, see [../examples/configs/template](https://github.com/tdhite/kwite/blob/master/examples/configs/template).
+
+## JSON Functions
+Kwites have access to JSON encoding functionality. These are wrappers around
+various calls from the [Go JSON
+package](https://golang.org/pkg/encoding/json/).
+
+### jsonHTMLEscape jsonData
+Escapes JSON data for HTML to prepare it for \<script\> tags via wrapper around
+the [Go language json.HTMLEscape](https://godoc.org/encoding/json#HTMLEscape)
+method.
+
+| Parameter | Description |
+| --- | --- |
+| jsonData | A string value containing the *valid* JSON. Use [jsonValid](#jsonValid-jsonData) to assure valid jSON. |
+
+For example:
+    $myJSON := "{\\"c\\": \\"This is <b>bold</b> and this is not\\"}"
+    jsonHtmlEscape $myJSON
+
+### jsonIndent jsonData prefix indent
+Returens intended JSON (string) via wrapper around the [Golang
+json.Indent](https://godoc.org/encoding/json#Indent) method.  func
+
+| Parameter | Description |
+| --- | --- |
+| jsonData | A string value containing the *valid* JSON. Use [jsonValid](#jsonValid-jsonData) to assure valid jSON. |
+
+### jsonToInterface jsonData
+Unmarshals JSON string into a Go type (e.g., map[string]interface{}) via
+wrapper around [json.Marshal](https://godoc.org/encoding/json#Marshal).
+
+| Parameter | Description |
+| --- | --- |
+| jsonData | A string value containing the *valid* JSON. Use [jsonValid](#jsonValid-jsonData) to assure valid jSON. |
+
+For example:
+    $myJSON := "{\\"c\\": \\"This is <b>bold</b> and this is not\\"}"
+    $map := jsonToInterface $myJSON
+
+would create a Golang [map](https://golang.org/pkg/go/types/#Map). From there
+access within a template is as normal, such as {{ $myJSON.c | jsonHTMLEscape}}.
+
+### jsonToString jsonVariable
+Returns a string containing the JSON representing the value of jsonVariable.
+
+| Parameter | Description |
+| --- | --- |
+| jsonVariable | A variable (any Go type) to be marshalled to a JSON encoded string. |
+
+For example:
+    $jsonString := jsonToString .
+
+would return the JSON representation of the template "." variable.
+
+### jsonValid jsonData
+Reports whether a string is valid JSON via wrapper around
+[json.Valid](https://godoc.org/encoding/json#Valid)
+
+| Parameter | Description |
+| --- | --- |
+| jsonData | A string value containing the JSON to validate. |
+
+For example:
+    $myJSON := "{\\"c\\": \\"This is <b>bold</b> and this is not\\"}"
+    $isValid := jsonValid $myJSON

@@ -14,8 +14,10 @@ import (
 
 	tplfuncs "github.com/tdhite/kwite/internal/tplfunc/funcs"
 	tplhttp "github.com/tdhite/kwite/internal/tplfunc/http"
+	tpljson "github.com/tdhite/kwite/internal/tplfunc/json"
 	tplmath "github.com/tdhite/kwite/internal/tplfunc/math"
 	tplstring "github.com/tdhite/kwite/internal/tplfunc/string"
+	tplvals "github.com/tdhite/kwite/internal/tplfunc/values"
 )
 
 func TextTemplateFuncs() text_template.FuncMap {
@@ -29,8 +31,10 @@ func HtmlTemplateFuncs() html_template.FuncMap {
 func loadFuncs() error {
 	funcs := []func() error{
 		tplhttp.LoadFuncs,
+		tpljson.LoadFuncs,
 		tplmath.LoadFuncs,
 		tplstring.LoadFuncs,
+		tplvals.LoadFuncs,
 	}
 
 	for _, f := range funcs {
