@@ -36,18 +36,6 @@ private-git-repo-key: |
   -----BEGIN RSA PRIVATE KEY-----
   all your private key data here
   -----END RSA PRIVATE KEY-----
-# This is the CA for use by Docker when
-# pulling Docker images, such as from local,
-# private registries that are using locally
-# generated PKI certs.
-task_cn: concourse.corp.local
-task_ca: |
-  -----BEGIN CERTIFICATE-----
-  put any certificate authorities (ca.crt)
-  Concourse would not know such as those
-  created with easy-rsa for use with local,
-  private Docker registries.
-  -----END CERTIFICATE-----
 
 # This is the end of hand-tuned variables. After setting up those above,
 # run append-creds-to-params.sh, which will attempt to append kubernetes auth

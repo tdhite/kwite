@@ -28,7 +28,8 @@ resources:
     type: docker-image
     source:
       repository: ((docker-registry-repo))
-      insecure_registries: [ "concourse.corp.local" ]
+      username: ((docker-registry-user))
+      password: ((docker-registry-passwd))
 
 jobs:
   - name: code-tests
@@ -40,15 +41,11 @@ jobs:
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
       - task: unit-tests
         file: sources/build/ci/tasks/unit.yaml
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
 
   - name: increment-version
     serial_groups:
@@ -76,8 +73,6 @@ jobs:
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
       - get: version
         passed: [increment-version]
       - task: container
@@ -85,8 +80,6 @@ jobs:
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
       - put: image
         params:
           build: container
@@ -112,8 +105,6 @@ jobs:
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
       - task: kubernetes-deploy
         file: sources/build/ci/tasks/kubernetes-deploy.yaml
         params:
@@ -127,5 +118,3 @@ jobs:
         vars:
           taskimage: ((taskimage))
           taskimagetag: ((taskimagetag))
-          task_cn: ((task_cn))
-          task_ca: ((task_ca))
