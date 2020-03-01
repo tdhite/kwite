@@ -8,23 +8,14 @@ SPDX-License-Identifier: https://spdx.org/licenses/MIT.html
 package app
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/tdhite/kwite/internal/file"
 	"github.com/tdhite/kwite/internal/globals"
 )
-
-// Read the contents of a (configmap) file and return the string value
-func readFile(path string) string {
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		log.Fatalf("Failed reading ConfigMap entry at %s: %s\n", path, err)
-	}
-	return string(b)
-}
 
 // Read the ConfigMap into a map from the mount point specified by the path
 // Only certain keys of interest exist for this app: url, alive, ready and
@@ -34,20 +25,29 @@ func readFile(path string) string {
 func readConfigMap(path string) {
 	configMap = make(map[string]string, 0)
 
-	file, err := os.Open(path)
-	if err != nil {
-		log.Fatalf("Failed opening config directory: %s", err)
-	}
-	defer file.Close()
+	// setup default rewrite rules file
+	configMap["rewrite"] = filepath.Join(globals.ConfigDir, "rewrite")
 
-	list, _ := file.Readdirnames(0)
+	f, err := os.Open(path)
+	if err != nil {
+		log.Printf("Failed opening config directory: %s", err)
+		return
+	}
+	defer f.Close()
+
+	list, _ := f.Readdirnames(0)
 	for _, name := range list {
 		path := filepath.Join(globals.ConfigDir, name)
 
 		switch name {
 		case "url":
 			{
-				configMap["url"] = strings.TrimSpace(readFile(path))
+				if s, err := file.ReadFileString(path); err != nil {
+					log.Println("Defaulting key url to kwite because of failed read of "+path, err)
+					configMap["url"] = "/kwite"
+				} else {
+					configMap["url"] = strings.TrimSpace(s)
+				}
 				log.Println("Key url: ", configMap["url"])
 			}
 		case "template":
@@ -64,6 +64,11 @@ func readConfigMap(path string) {
 			{
 				configMap["alive"] = path
 				log.Println("Alive template: ", configMap["alive"])
+			}
+		case "rewrite":
+			{
+				configMap["rewrite"] = path
+				log.Println("Rewrite template: ", configMap["rewrite"])
 			}
 		default:
 			log.Println("Ignoring ConfigMap key: ", name)

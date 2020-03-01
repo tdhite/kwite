@@ -16,7 +16,7 @@ import (
 )
 
 // Escapes JSON data via wrapper around https://godoc.org/encoding/json#HTMLEscape
-func jsonHTMLEscape(data string) string {
+func JsonHTMLEscape(data string) string {
 	d := []byte(data)
 	b := bytes.NewBufferString("")
 	json.HTMLEscape(b, d)
@@ -24,7 +24,7 @@ func jsonHTMLEscape(data string) string {
 }
 
 // Indents JSON via wrapper around https://godoc.org/encoding/json#Indent
-func jsonIndent(data, prefix, indent string) (string, error) {
+func JsonIndent(data, prefix, indent string) (string, error) {
 	d := []byte(data)
 	b := bytes.NewBufferString("")
 	if err := json.Indent(b, d, prefix, indent); err != nil {
@@ -36,7 +36,7 @@ func jsonIndent(data, prefix, indent string) (string, error) {
 
 // Unmartials JSON string into a Go type (e.g., map[string]interface{}) via
 // wrapper around https://godoc.org/encoding/json#Unmarshal
-func jsonToInterface(data string) (interface{}, error) {
+func JsonToInterface(data string) (interface{}, error) {
 	var j interface{}
 	b := []byte(data)
 	if err := json.Unmarshal(b, &j); err != nil {
@@ -49,7 +49,7 @@ func jsonToInterface(data string) (interface{}, error) {
 
 // Unmartials JSON string into a Go type (e.g., map[string]interface{}) via
 // wrapper around https://godoc.org/encoding/json#Marshal
-func jsonToString(iface interface{}) (string, error) {
+func JsonToString(iface interface{}) (string, error) {
 	if b, err := json.Marshal(iface); err != nil {
 		log.Println(err)
 		return "", err
@@ -60,7 +60,7 @@ func jsonToString(iface interface{}) (string, error) {
 
 // Reports whether a string is valid JSON via wrapper around
 // https://godoc.org/encoding/json#Valid
-func jsonValid(j string) bool {
+func JsonValid(j string) bool {
 	return json.Valid([]byte(j))
 }
 
@@ -69,11 +69,11 @@ func jsonValid(j string) bool {
 // (e.g., FieldFunc).
 func LoadFuncs() error {
 	f := map[string]interface{}{
-		"jsonHTMLEscape":  jsonHTMLEscape,
-		"jsonIndent":      jsonIndent,
-		"jsonToInterface": jsonToInterface,
-		"jsonToString":    jsonToString,
-		"jsonValid":       jsonValid,
+		"jsonHTMLEscape":  JsonHTMLEscape,
+		"jsonIndent":      JsonIndent,
+		"jsonToInterface": JsonToInterface,
+		"jsonToString":    JsonToString,
+		"jsonValid":       JsonValid,
 	}
 
 	return funcs.AddMethods(f)

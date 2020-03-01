@@ -38,10 +38,10 @@ p {
 
 {{ $v := valuesNew 2 }}
 {{ $v.Set 3 }}
-After variable manipulations, $v is {{ $v }}. (Note: internally $v is housed in a Go struct, so it has those braces around it).
+<p>After variable manipulations, $v is {{ $v }}. (Note: internally $v is housed in a Go struct, so it has those braces around it).</p>
 
 <p>To get a more palatable print format, use the <a href="https://golang.org/pkg/fmt/">string formats</a>.<br/>
-We'll use this: After variable manipulations, $v is {{ "{{ $v.Printf }}" }} "%v" {{ "}}" }}.</p>
+We'll use this: After variable manipulations, $v is {{ "{{ $v.Printf" }} "%v" {{ "}}" }}.</p>
 
 <p>After variable manipulations, $v is {{ $v.Printf "%v" }}.</p>
 
@@ -49,14 +49,14 @@ We'll use this: After variable manipulations, $v is {{ "{{ $v.Printf }}" }} "%v"
 <p>What's next is the result of string computations via the strCompare function:
 
 <br/>{{ $s1 := "aaa" -}} {{- $s2 := "bbb" -}} {{- $comp := strCompare $s1 $s2 -}}
-<br/>{{ $s1 }} is {{ if ($comp) lt 0 -}} less {{ else -}} greater {{ end -}} than {{ $s2 }}.
-<br/>{{ $s2 }} is {{ if ($comp) gt 0 -}} greater {{ else -}} less {{ end -}} than {{ $s1 }}.
+<br/>{{ $s1 }} is {{ if lt $comp 0 -}} less {{ else -}} greater {{ end -}} than {{ $s2 }}.
+<br/>{{ $s2 }} is {{ if gt $comp 0 -}} greater {{ else -}} less {{ end -}} than {{ $s1 }}.
 <br/></p>
 
 <p>Here is the output from the use of strNewReplacer and subsequent Replace functions:</p>
 
 {{ $r := strNewReplacer "<" "&lt;" ">" "&gt;" }}
-{{- $r.Replace "This is some italicized <i>HTML</i>!" }}
+<p>{{- $r.Replace "This is some italicized <i>HTML</i>!" }}</p>
 
 <hr/><h2>How Abouth Math?</h2>
 <p>The arccos of sin(Pi) is {{ Acos (Sin Pi) }} radians.</p>
@@ -74,5 +74,7 @@ We'll use this: After variable manipulations, $v is {{ "{{ $v.Printf }}" }} "%v"
 {{ $g := httpGet "http://www.guimp.com" "{\"x\": 2}" "Accept" "text/plain" "Content-type" "application/json" }}
 <p>{{- $r.Replace $g }}</p>
 
+<p>The next content was retrieved via httpGet and kwite url reformation of kwite://kwite-2.kwite/, which is rewritten to http://www.guimp.com/:</p>
+<p>{{ httpGet "kwite://kwite-2.kwite:80/" "" }}</p>
 </body>
 </html>

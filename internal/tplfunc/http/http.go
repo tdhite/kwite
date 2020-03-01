@@ -26,6 +26,13 @@ func doRequest(op, url, body string, headers []string) (string, error) {
 		return "", nil
 	}
 
+	// TODO: once https is supported, fix this via parameter passed scheme
+	realUrl, err := GetRewrite(url, "http")
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+
 	c := nethttp.Client{}
 
 	var b io.ReadCloser = nil
@@ -33,7 +40,7 @@ func doRequest(op, url, body string, headers []string) (string, error) {
 		b = ioutil.NopCloser(strings.NewReader(body))
 	}
 
-	req, err := nethttp.NewRequest(op, url, b)
+	req, err := nethttp.NewRequest(op, realUrl, b)
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -44,7 +51,7 @@ func doRequest(op, url, body string, headers []string) (string, error) {
 		req.Header.Set(headers[i], headers[i+1])
 	}
 
-	log.Printf("http: performing %s on %s with headers: %v\n", op, url, req.Header)
+	log.Printf("http: performing %s on %s with headers: %v\n", op, realUrl, req.Header)
 	rsp, err := c.Do(req)
 	if err != nil {
 		log.Println(err)
@@ -55,7 +62,7 @@ func doRequest(op, url, body string, headers []string) (string, error) {
 	// pull out the body and return it or error
 	rspBody, err := ioutil.ReadAll(rsp.Body)
 	if err != nil {
-		log.Print("Failed reading response body for url: " + url)
+		log.Print("Failed reading response body for url: " + realUrl)
 		log.Println(err)
 		return "", err
 	}

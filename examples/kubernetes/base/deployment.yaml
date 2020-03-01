@@ -13,6 +13,8 @@ spec:
       labels:
         app: kwite
     spec:
+      imagePullSecrets:
+        - name: kwite-registry-creds
       containers:
         - name: kwite
           image: kwite:latest

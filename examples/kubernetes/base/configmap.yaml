@@ -10,4 +10,12 @@ data:
     this is a
     base template
     x is {{ .x }}
+    The next content was retrieved via httpGet and kwite url reformation of
+    kwite-2.kwite, which is rewritten to http://www.guimp.com:
+    {{ httpGet "kwite-2.kwite" "" }}
   ignoredkey: "this particular key will be ignored"
+  rewrite: |
+    {
+      "kwite-1.kwite": "some.other.site",
+      "kwite-2.kwite": "www.guimp.com"
+    }

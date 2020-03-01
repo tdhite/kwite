@@ -14,6 +14,7 @@ import (
 
 	"github.com/tdhite/kwite/internal/globals"
 	"github.com/tdhite/kwite/internal/server"
+	"github.com/tdhite/kwite/internal/tplfunc/http"
 )
 
 var Template *server.Template
@@ -27,6 +28,10 @@ func RealMain() int {
 
 	// Load the configmap
 	readConfigMap(globals.ConfigDir)
+
+	// Initialize and watch for rewrite rules changes
+	l.Println("Starting rewrite rules watcher on file ", configMap["rewrite"])
+	http.WatchRewriteRules(configMap["rewrite"])
 
 	Template, err := server.NewTemplate(configMap, server.IsFile, l)
 	if err != nil {
