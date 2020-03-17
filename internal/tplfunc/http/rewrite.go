@@ -14,20 +14,12 @@ import (
 	neturl "net/url"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/tdhite/kwite/internal/file"
 )
-
-type fileWatcher struct {
-	watchingDir bool
-	path        string
-	watcher     *fsnotify.Watcher
-}
-
-var rulesWatcher *fileWatcher
 
 type rewriteRules struct {
 	mappings map[string]string
@@ -112,93 +104,77 @@ func GetRewrite(url, scheme string) (string, error) {
 	return u.String(), nil
 }
 
-func doWatches(dir, fname string, finished <-chan struct{}) {
-
-	log.Println("http: starting watcher thread loop.")
+func waitFileExists(path string) {
+	// wait for the file to exist
 	for {
-		select {
-		case event, ok := <-rulesWatcher.watcher.Events:
-			if !ok {
-				return
-			}
-			log.Println("http: rewrite rules file changed, trying to update kwite url mapping rules.")
-			path := filepath.Join(dir, fname)
-			if event.Op&fsnotify.Write == fsnotify.Write {
-				if _, err := os.Stat(path); err == nil {
-					if rulesWatcher.watchingDir {
-						rulesWatcher.watchingDir = false
-						log.Println("http: removing from watch: ", dir)
-						rulesWatcher.watcher.Remove(dir)
-						log.Println("http: adding to watch: ", path)
-						rulesWatcher.watcher.Add(path)
-					}
+		log.Println("Checking for file exists at " + path)
+		_, err := os.Lstat(path)
+		if os.IsNotExist(err) {
+			time.Sleep(1 * time.Second)
+		} else {
+			break
+		}
+	}
+}
+
+func doWatch(watcher *fsnotify.Watcher, path string) {
+	log.Println("http: clearing out any existing watches on ", path)
+
+	// graceful shutdown term handling
+	ossig := make(chan os.Signal, 1)
+	signal.Notify(ossig, os.Interrupt)
+
+	for {
+		waitFileExists(path)
+
+		initRewriteRules(path)
+
+		log.Println("http: adding file watch on ", path)
+		if err := watcher.Add(path); err != nil {
+			log.Println("http: ", err)
+			break
+		}
+
+		log.Println("http: starting rewrite file watcher thread.")
+		cont := true
+		for cont {
+			select {
+			case event, ok := <-watcher.Events:
+				if !ok {
+					cont = false
+				}
+				log.Println("http: rewrite rules file changed, trying to update kwite url mapping rules.")
+				if event.Op&fsnotify.Write == fsnotify.Write {
 					if err := initRewriteRules(path); err != nil {
 						log.Println(err)
 					}
 					log.Println("http: updated rewrite rules succeeded.")
+				} else if event.Op&fsnotify.Remove == fsnotify.Remove {
+					log.Println("http: rewrite rules file deleted, removing all rules and watches.")
+					watcher.Remove(path)
+					setRewriteRules(nil)
+					cont = false
 				}
-			} else if event.Op&fsnotify.Remove == fsnotify.Remove {
-				log.Println("http: rewrite rules file deleted, removing all rules.")
-				setRewriteRules(nil)
-				rulesWatcher.watchingDir = true
-				log.Println("http: removing from watch: ", path)
-				rulesWatcher.watcher.Remove(path)
-				log.Println("http: adding to watch: ", dir)
-				rulesWatcher.watcher.Add(dir)
-			}
-		case err, ok := <-rulesWatcher.watcher.Errors:
-			if !ok {
+			case err, ok := <-watcher.Errors:
+				if !ok {
+					cont = false
+				}
+				log.Println("http: ", err)
+			case <-ossig:
+				log.Println("http: terminating rewrite file watcher.")
+				watcher.Close()
 				return
 			}
-			log.Println("http: ", err)
-		case <-finished:
-			log.Println("http: terminating file watcher.")
-			rulesWatcher.watcher.Close()
-			return
 		}
 	}
 }
 
 func WatchRewriteRules(path string) {
-	// Load and setup rewrite map watcher
-	initRewriteRules(path)
-
-	if rulesWatcher != nil {
-		rulesWatcher.watcher.Close()
-	} else {
-		rulesWatcher = &fileWatcher{
-			path:        path,
-			watchingDir: true,
-		}
-		// watch for future updates
-		watcher, err := fsnotify.NewWatcher()
-		if err != nil {
-			log.Println("http: ", err)
-			return
-		}
-		rulesWatcher.watcher = watcher
-	}
-
-	dir, fname := filepath.Split(path)
-	finished := make(chan struct{}, 1)
-	go doWatches(dir, fname, finished)
-
-	log.Println("http: adding file watch on ", dir)
-	if err := rulesWatcher.watcher.Add(dir); err != nil {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
 		log.Println("http: ", err)
 		return
 	}
 
-	// Try graceful shutdown (if possible)
-	ossig := make(chan os.Signal, 1)
-	signal.Notify(ossig, os.Interrupt)
-	go func() {
-		// wait on signal to start the server shutdown
-		log.Println("http: watcher waiting for os interrupt signal.")
-		<-ossig
-		log.Println("http: recieved signal to stop, shutting down file watcher.")
-
-		// write (via closing) the finished channel to free up listeners
-		close(finished)
-	}()
+	go doWatch(watcher, path)
 }
