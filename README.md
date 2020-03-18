@@ -101,12 +101,6 @@ for "thisotherkwite" in "thatnamespace" and issue the HTTP GET appropriately.
 That might resolve to something like
 `http://mykwite.thatnamespace.svc.cluster.local:8080/thisotherkwite`.
 
-NOTE: There is quite  bit more work and consideration to do on
-self-reformation, for sure, but that will come soon enough. At this time Kwites
-to not yet self-reform and that will probably be handled by
-[Kwite-operator](https://github.com/tdhite/kwite-operator). For now you can
-call other Kwites using their cluster local or ingress addresses.
-
 ## Try it out
 To try out Kwite, it must be built and is usually executed in a suitable
 [Kubernetes](https://kubernetes.io) environment. Details are [further

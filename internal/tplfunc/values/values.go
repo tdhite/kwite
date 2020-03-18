@@ -35,7 +35,7 @@ func new(initval interface{}) *variable {
 	return &variable{v: initval}
 }
 
-// Adds all methods from the this package
+// Adds all methods from this package
 func LoadFuncs() error {
 	f := map[string]interface{}{
 		"valuesNew": new,
