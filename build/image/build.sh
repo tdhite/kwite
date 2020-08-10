@@ -5,8 +5,10 @@
 # SPDX-License-Identifier: https://spdx.org/licenses/MIT.html
 #
 
+CONTAINER=${CONTAINER:-kwite}
+
 # Grab the latest build output
 cp -a ../../cmd/kwite/kwite .
 
 # Build and push the container
-docker build --rm -t kwite .
+docker build --rm -t "${CONTAINER}" .
