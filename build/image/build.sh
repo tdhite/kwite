@@ -12,3 +12,7 @@ cp -a ../../cmd/kwite/kwite .
 
 # Build and push the container
 docker build --rm -t "${CONTAINER}" .
+
+# Cleanup
+rm -f kwite
+
